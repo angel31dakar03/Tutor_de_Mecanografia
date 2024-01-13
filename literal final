@@ -1,0 +1,128 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+
+public class TutorMecanografiaConInforme extends JFrame {
+
+    private JTextArea textArea;
+    private JButton[] teclas;
+    private List<String> pangramas;
+    private Random random;
+    private int correctas;
+    private int incorrectas;
+    private Set<String> teclasIncorrectas;
+
+    public TutorMecanografiaConInforme() {
+        super("Tutor de Mecanografía");
+
+        textArea = new JTextArea();
+        textArea.setEditable(false);
+
+        // Cargar pangramas desde el archivo
+        cargarPangramas();
+
+        // Crear teclas
+        teclas = new JButton[26];
+        for (int i = 0; i < 26; i++) {
+            char letra = (char) ('A' + i);
+            teclas[i] = new JButton(String.valueOf(letra));
+            teclas[i].addActionListener(new TeclaActionListener());
+        }
+
+        // Botón para generar el informe
+        JButton botonInforme = new JButton("Generar Informe");
+        botonInforme.addActionListener(e -> generarInforme());
+
+        // Diseño del teclado
+        JPanel tecladoPanel = new JPanel(new GridLayout(3, 9));
+        for (int i = 0; i < 26; i++) {
+            tecladoPanel.add(teclas[i]);
+        }
+
+        // Diseño general
+        setLayout(new BorderLayout());
+        add(new JScrollPane(textArea), BorderLayout.CENTER);
+        add(tecladoPanel, BorderLayout.SOUTH);
+        add(botonInforme, BorderLayout.NORTH);
+
+        random = new Random();
+        correctas = 0;
+        incorrectas = 0;
+        teclasIncorrectas = new HashSet<>();
+
+        // Mostrar un pangrama aleatorio inicial
+        mostrarPangramaAleatorio();
+        actualizarContadores();
+
+        setSize(500, 300);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setVisible(true);
+    }
+
+    private void cargarPangramas() {
+        try {
+            pangramas = Files.readAllLines(Paths.get("pangramas.txt"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void mostrarPangramaAleatorio() {
+        if (pangramas != null && !pangramas.isEmpty()) {
+            int indiceAleatorio = random.nextInt(pangramas.size());
+            JOptionPane.showMessageDialog(this, pangramas.get(indiceAleatorio), "Pangrama", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    private void actualizarContadores() {
+        setTitle("Tutor de Mecanografía - Correctas: " + correctas + " / Incorrectas: " + incorrectas);
+    }
+
+    private class TeclaActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JButton boton = (JButton) e.getSource();
+            String letra = boton.getText();
+
+            // Comparar la letra con el primer carácter del pangrama actual
+            if (pangramas != null && !pangramas.isEmpty()) {
+                String primerCaracterPangrama = pangramas.get(0).substring(0, 1);
+                if (letra.equals(primerCaracterPangrama)) {
+                    correctas++;
+                } else {
+                    incorrectas++;
+                    teclasIncorrectas.add(letra);
+                }
+            }
+
+            // Mostrar un nuevo pangrama aleatorio después de ingresar una letra
+            mostrarPangramaAleatorio();
+            actualizarContadores();
+        }
+    }
+
+    private void generarInforme() {
+        if (!teclasIncorrectas.isEmpty()) {
+            StringBuilder informe = new StringBuilder("Teclas que se le dificultan al usuario:\n");
+            for (String tecla : teclasIncorrectas) {
+                informe.append(tecla).append(" ");
+            }
+            JOptionPane.showMessageDialog(this, informe.toString(), "Informe de Teclas Incorrectas", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this, "El usuario no ha tenido dificultades con ninguna tecla.", "Informe de Teclas Incorrectas", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new TutorMecanografiaConInforme());
+    }
+}
