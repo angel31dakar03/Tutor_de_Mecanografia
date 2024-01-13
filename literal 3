@@ -1,0 +1,87 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Random;
+
+public class TutorMecanografiaConPangramas extends JFrame {
+
+    private JTextArea textArea;
+    private JButton[] teclas;
+    private List<String> pangramas;
+    private Random random;
+
+    public TutorMecanografiaConPangramas() {
+        super("Tutor de Mecanografía");
+
+        textArea = new JTextArea();
+        textArea.setEditable(false);
+
+        // Cargar pangramas desde el archivo
+        cargarPangramas();
+
+        // Crear teclas
+        teclas = new JButton[26];
+        for (int i = 0; i < 26; i++) {
+            char letra = (char) ('A' + i);
+            teclas[i] = new JButton(String.valueOf(letra));
+            teclas[i].addActionListener(new TeclaActionListener());
+        }
+
+        // Diseño del teclado
+        JPanel tecladoPanel = new JPanel(new GridLayout(3, 9));
+        for (int i = 0; i < 26; i++) {
+            tecladoPanel.add(teclas[i]);
+        }
+
+        // Diseño general
+        setLayout(new BorderLayout());
+        add(new JScrollPane(textArea), BorderLayout.CENTER);
+        add(tecladoPanel, BorderLayout.SOUTH);
+
+        random = new Random();
+
+        setSize(500, 300);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setVisible(true);
+
+        // Mostrar un pangrama aleatorio inicial
+        mostrarPangramaAleatorio();
+    }
+
+    private void cargarPangramas() {
+        try {
+            pangramas = Files.readAllLines(Paths.get("pangramas.txt"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void mostrarPangramaAleatorio() {
+        if (pangramas != null && !pangramas.isEmpty()) {
+            int indiceAleatorio = random.nextInt(pangramas.size());
+            JOptionPane.showMessageDialog(this, pangramas.get(indiceAleatorio), "Pangrama", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    private class TeclaActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JButton boton = (JButton) e.getSource();
+            String letra = boton.getText();
+            textArea.append(letra);
+
+            // Mostrar un nuevo pangrama aleatorio después de ingresar una letra
+            mostrarPangramaAleatorio();
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new TutorMecanografiaConPangramas());
+    }
+}
