@@ -1,0 +1,51 @@
+import java.util.Random;
+import java.util.Scanner;
+
+public class TutorMecanografia {
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("¡Bienvenido al Tutor de Mecanografía!");
+        System.out.println("Escribe las palabras que ves en la pantalla. Presiona Enter después de cada palabra.");
+        System.out.println("Para salir, escribe 'exit'.\n");
+
+        while (true) {
+            String palabraGenerada = generarPalabra();
+            System.out.println("Palabra a escribir: " + palabraGenerada);
+
+            long inicioTiempo = System.currentTimeMillis();
+            String entradaUsuario = scanner.nextLine();
+            long finTiempo = System.currentTimeMillis();
+
+            if (entradaUsuario.equalsIgnoreCase("exit")) {
+                System.out.println("¡Hasta luego!");
+                break;
+            }
+
+            if (palabraGenerada.equals(entradaUsuario)) {
+                long tiempoEmpleado = finTiempo - inicioTiempo;
+                double velocidad = calcularVelocidad(entradaUsuario.length(), tiempoEmpleado);
+                System.out.println("Correcto. Velocidad: " + velocidad + " palabras por minuto.\n");
+            } else {
+                System.out.println("Incorrecto. Inténtalo de nuevo.\n");
+            }
+        }
+
+        scanner.close();
+    }
+
+    private static String generarPalabra() {
+        String[] palabras = {"java", "programacion", "teclado", "desarrollo", "mecanografia", "openai", "aprendizaje"};
+        Random random = new Random();
+        int indice = random.nextInt(palabras.length);
+        return palabras[indice];
+    }
+
+    private static double calcularVelocidad(int longitudPalabra, long tiempoEmpleado) {
+        double segundos = tiempoEmpleado / 1000.0;
+        double minutos = segundos / 60.0;
+        double palabrasPorMinuto = longitudPalabra / minutos;
+        return palabrasPorMinuto;
+    }
+}
